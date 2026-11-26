@@ -562,6 +562,7 @@ curl -I http://localhost/
 ## Related Documentation
 
 - [Installation Guide](../INSTALLATION.md)
+- [Server Installation and Change Approval SOP](./itms-server-installation-approval-sop.md)
 - [Multi-Server Load Balancing](multi-server-load-balancing.md)
 - [Database Replication](database-replication.md)
 - [Backup and Recovery](backup-recovery.md)

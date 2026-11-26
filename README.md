@@ -121,6 +121,7 @@ In production, the frontend should use same-origin `/api` and `/ws` through ngin
 ## Submission Docs
 
 - Project overview for submission and review: `docs/project-submission.md`
+- ITMS server installation and change approval SOP: `docs/itms-server-installation-approval-sop.md`
 - Deployment verification and handoff notes: `docs/deployment-handoff.md`
 - Security and release hardening summary: `docs/release-hardening-summary-2026-04-22.md`
 - Stakeholder-facing release note: `docs/release-note-2026-07-10.md`
