@@ -1,0 +1,1 @@
+-- Intentionally empty. Production and development instances start without demo data.

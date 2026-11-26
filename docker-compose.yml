@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: salt_console
+    ports:
+      - "5434:5432"
+    volumes:
+      - salt_console_pg:/var/lib/postgresql/data
+
+  salt-master:
+    image: saltstack/salt:3006.4
+    container_name: salt-master
+    command: ["/bin/sh", "-lc", "salt-master -d -l info && exec salt-api -l info"]
+    ports:
+      - "8001:8000"
+      - "4505:4505"
+      - "4506:4506"
+    volumes:
+      - ./docker/salt/master/conf/master:/etc/salt/master:ro
+
+  minion-ubuntu:
+    image: saltstack/salt:3006.4
+    container_name: minion-ubuntu
+    command: ["salt-minion", "-l", "info"]
+    depends_on:
+      - salt-master
+    volumes:
+      - ./docker/salt/minion-ubuntu/conf/minion:/etc/salt/minion:ro
+
+  minion-rocky:
+    image: saltstack/salt:3006.4
+    container_name: minion-rocky
+    command: ["salt-minion", "-l", "info"]
+    depends_on:
+      - salt-master
+    volumes:
+      - ./docker/salt/minion-rocky/conf/minion:/etc/salt/minion:ro
+
+  salt-bff:
+    build:
+      context: ./backend/salt-bff
+    environment:
+      PORT: 4100
+      NODE_ENV: development
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/salt_console
+      SALT_API_URL: http://salt-master:8000
+      SALT_API_USER: salt
+      SALT_API_PASSWORD: saltapi
+      SALT_EAUTH: sharedsecret
+      SALT_HTTP_TIMEOUT_MS: 10000
+      SALT_EVENTS_TIMEOUT_MS: 180000
+      RUN_RATE_LIMIT_PER_MINUTE: 30
+      MAX_CONCURRENT_RUNS: 6
+    depends_on:
+      - postgres
+      - salt-master
+    ports:
+      - "4100:4100"
+
+volumes:
+  salt_console_pg:

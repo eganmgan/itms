@@ -1,0 +1,60 @@
+services:
+  sync-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: mattermost_sync
+      POSTGRES_USER: mattermost_sync
+      POSTGRES_PASSWORD: ${SYNC_DB_PASSWORD:?Set SYNC_DB_PASSWORD}
+    volumes:
+      - sync-db-data:/var/lib/postgresql/data
+      - ../../backend/db/postgres_migrations/068_mattermost_inbound_posts.sql:/docker-entrypoint-initdb.d/001-sync.sql:ro
+      - ./sync-recovery.sql:/docker-entrypoint-initdb.d/002-recovery.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mattermost_sync -d mattermost_sync"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+    networks:
+      - sync-private
+
+  sync:
+    image: itms-mattermost-sync:local
+    build:
+      context: ../../backend
+      dockerfile: ../deploy/mattermost/sync.Dockerfile
+    environment:
+      SYNC_DATABASE_URL: ${SYNC_DATABASE_URL:?Set SYNC_DATABASE_URL}
+      MATTERMOST_INBOUND_WEBHOOK_TOKEN: ${MATTERMOST_INBOUND_WEBHOOK_TOKEN:?Set MATTERMOST_INBOUND_WEBHOOK_TOKEN}
+      MATTERMOST_INBOUND_CHANNEL_ID: ${MATTERMOST_INBOUND_CHANNEL_ID:?Set MATTERMOST_INBOUND_CHANNEL_ID}
+      ITMS_AUTH_URL: ${ITMS_AUTH_URL:?Set ITMS_AUTH_URL}
+      MATTERMOST_RECOVERY_URL: ${MATTERMOST_RECOVERY_URL:?Set MATTERMOST_RECOVERY_URL}
+      MATTERMOST_RECOVERY_LOGIN: ${MATTERMOST_RECOVERY_LOGIN:?Set MATTERMOST_RECOVERY_LOGIN}
+      MATTERMOST_RECOVERY_PASSWORD: ${MATTERMOST_RECOVERY_PASSWORD:?Set MATTERMOST_RECOVERY_PASSWORD}
+      MATTERMOST_RECOVERY_START: ${MATTERMOST_RECOVERY_START:?Set MATTERMOST_RECOVERY_START}
+      GIN_MODE: release
+    depends_on:
+      sync-db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3002:3002"
+    restart: unless-stopped
+    networks:
+      sync-private: {}
+      itms-backend: {}
+      mattermost:
+        aliases:
+          - itms-mattermost-sync
+
+volumes:
+  sync-db-data:
+
+networks:
+  sync-private:
+    internal: true
+  itms-backend:
+    external: true
+    name: backend_default
+  mattermost:
+    external: true
+    name: mattermost_default

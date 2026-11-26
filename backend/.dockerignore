@@ -1,0 +1,10 @@
+.git
+itms.db
+server
+node_modules
+.tmp
+bin
+coverage
+*.log
+.env
+.env.*

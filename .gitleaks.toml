@@ -1,0 +1,17 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Reviewed synthetic authentication and redaction fixtures only"
+condition = "AND"
+paths = [
+  '''(^|/)backend/internal/api/device_directory_test\.go$''',
+  '''(^|/)backend/internal/api/router_login_identity_test\.go$''',
+  '''(^|/)backend/internal/api/router_auth_portal_notifications_test\.go$''',
+  '''(^|/)backend/internal/platform/middleware/middleware_test\.go$''',
+]
+regexTarget = "secret"
+regexes = [
+  '''^test-secret-with-sufficient-length-123$''',
+  '''^key_1234567890$''',
+]

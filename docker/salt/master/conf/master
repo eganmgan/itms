@@ -1,0 +1,31 @@
+interface: 0.0.0.0
+publish_port: 4505
+ret_port: 4506
+user: root
+auto_accept: True
+
+rest_cherrypy:
+  port: 8000
+  host: 0.0.0.0
+  debug: False
+  disable_ssl: True
+
+netapi_enable_clients:
+  - local
+  - local_async
+  - wheel
+  - runner
+
+external_auth:
+  sharedsecret:
+    salt:
+      - .*
+      - '@wheel'
+      - '@jobs'
+
+sharedsecret: saltapi
+
+nodegroups:
+  Finance: "G@department:Finance"
+  Operations: "G@department:Operations"
+  Platform: "G@department:Platform"

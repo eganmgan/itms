@@ -1,0 +1,56 @@
+services:
+  database:
+    image: postgres:16-alpine@sha256:1d5b02d3a9941fbd52437db4107f8c52d6297dac553ca1e5c299ebb3756b4857
+    container_name: itms-mattermost-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mattermost
+      POSTGRES_USER: mattermost
+      POSTGRES_PASSWORD: ${MM_DB_PASSWORD:?MM_DB_PASSWORD is required}
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mattermost -d mattermost"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  mattermost:
+    image: mattermost/mattermost-team-edition:12.1.0@sha256:35927b9c535a9eb74f0e45385d3fe5d8308b16e0464031f157a834da8af3ee73
+    container_name: itms-mattermost
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "${MM_BIND_ADDR:-127.0.0.1}:${MM_HOST_PORT:-8065}:8065"
+    environment:
+      MM_SQLSETTINGS_DRIVERNAME: postgres
+      MM_SQLSETTINGS_DATASOURCE: "postgres://mattermost:${MM_DB_PASSWORD}@database:5432/mattermost?sslmode=disable&connect_timeout=10"
+      MM_SERVICESETTINGS_LISTENADDRESS: ":8065"
+      MM_SERVICESETTINGS_SITEURL: "${MM_SITE_URL:-http://127.0.0.1:8065}"
+      MM_SERVICESETTINGS_ENABLELOCALMODE: "true"
+    volumes:
+      - config:/mattermost/config
+      - data:/mattermost/data
+      - logs:/mattermost/logs
+      - plugins:/mattermost/plugins
+      - client-plugins:/mattermost/client/plugins
+      - bleve-indexes:/mattermost/bleve-indexes
+
+volumes:
+  database:
+    name: itms-mattermost-database
+  config:
+    name: itms-mattermost-config
+  data:
+    name: itms-mattermost-data
+  logs:
+    name: itms-mattermost-logs
+  plugins:
+    name: itms-mattermost-plugins
+  client-plugins:
+    name: itms-mattermost-client-plugins
+  bleve-indexes:
+    name: itms-mattermost-bleve-indexes

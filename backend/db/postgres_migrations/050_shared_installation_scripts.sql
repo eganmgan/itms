@@ -1,0 +1,1 @@
+ALTER TABLE admin_installation_scripts ALTER COLUMN entity_id DROP NOT NULL;

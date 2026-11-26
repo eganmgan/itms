@@ -1,0 +1,7 @@
+master: salt-master
+id: minion-rocky
+grpc_enabled: False
+grains:
+  department: Operations
+  os: Rocky Linux
+  os_family: RedHat

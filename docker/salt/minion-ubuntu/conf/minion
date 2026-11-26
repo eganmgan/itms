@@ -1,0 +1,7 @@
+master: salt-master
+id: minion-ubuntu
+grpc_enabled: False
+grains:
+  department: Finance
+  os: Ubuntu
+  os_family: Debian
